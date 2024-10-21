@@ -16,7 +16,9 @@ app.use(bodyParser.json())
 
 app.use(express.static(config.frontend))
 
-app.use('/api', (req, res) => {
+app.post('/api', (req, res) => {
+    console.log(req.body);
+    
     res.json({ test: true })
 })
 

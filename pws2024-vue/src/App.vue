@@ -1,54 +1,39 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+<script>
+  export default {
+    data() {
+      return {
+        inputData: {
+          firstName: '',
+          yearOfBirth: 2000
+        }
+      }
+    },
+    methods: {
+      vuetifyClicked() {
+        // console.log('button vuetify clicked', this.inputData);
+        fetch('/api', {
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json'
+          },
+          body: JSON.stringify(this.inputData)
+        })
+      }
+    },
+    mounted() {
+      console.log('mounted fired');
+    }
+  }
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="PWS 2024" />
-    </div>
-
-  </header>
-
-  <main>
-    <TheWelcome />
-
-  </main>
-
   <div>
-    <v-btn variant="elevated" color="primary">Vuetify</v-btn>
+    <v-text-field variant="outlined" v-model="inputData.firstName" label="first name"></v-text-field>
+    <v-text-field variant="outlined" v-model="inputData.yearOfBirth" label="Year of birth" type="number"></v-text-field>
+    <v-btn variant="elevated" color="primary" @click="vuetifyClicked">Vuetify</v-btn>
   </div>
-
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-}
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
 </style>
