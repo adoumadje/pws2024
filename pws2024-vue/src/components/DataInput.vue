@@ -18,6 +18,22 @@ export default {
                 }
             }
         }
+    },
+    methods: {
+        clearClicked() {
+            console.log(this.inputData);
+            
+        },
+        createClicked() {
+            console.log(this.inputData);
+            
+        },
+        updateClicked() {
+
+        },
+        deleteClicked() {
+
+        }
     }
 }
 </script>
@@ -42,10 +58,13 @@ export default {
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn variant="elevated">Clear</v-btn>
-                <v-btn variant="elevated" color="primary" v-if="!inputData._id" :disabled="!isValid">Create</v-btn>
-                <v-btn variant="elevated" color="secondary" v-if="inputData._id" :disabled="!isValid">Update</v-btn>
-                <v-btn variant="elevated" color="error" v-if="inputData._id">Delete</v-btn>
+                <v-btn variant="elevated" @click="clearClicked">Clear</v-btn>
+                <v-btn variant="elevated" color="primary" v-if="!inputData._id" :disabled="!isValid"
+                    @click="createClicked">Create</v-btn>
+                <v-btn variant="elevated" color="secondary" v-if="inputData._id" :disabled="!isValid"
+                    @click="updateClicked">Update</v-btn>
+                <v-btn variant="elevated" color="error" v-if="inputData._id"
+                    @click="deleteClicked">Delete</v-btn>
             </v-card-actions>
         </v-card>
     </v-form>
