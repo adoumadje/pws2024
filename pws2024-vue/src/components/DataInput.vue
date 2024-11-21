@@ -19,20 +19,72 @@ export default {
             }
         }
     },
+    emits: ['refreshOutput', 'displayMessage'],
     methods: {
         clearClicked() {
-            console.log(this.inputData);
-            
+            this.inputData = {}
         },
         createClicked() {
-            console.log(this.inputData);
-            
+            delete this.inputData._id
+            fetch('/api', {
+                method: 'POST',
+                headers: { 'Content-type': 'appliaction/json' },
+                body: JSON.stringify(this.inputData)
+            })
+            .then((res) => {
+                res.json().then((body) => {
+                    if(res.status < 400) {
+                        this.$emit('displayMessage', body.firstName + ' ' + body.lastName + ' was created')
+                        this.$emit('refreshOutput')
+                        this.clearClicked()
+                    } else {
+                        this.$emit('displayMessage', body.error, 'error')
+                    }
+                })
+                .catch((err) => {
+                    this.$emit('displayMessage', 'Error ' + res.status, 'error')
+                })
+            })
         },
         updateClicked() {
-
+            fetch('/api', {
+                method: 'PUT',
+                headers: { 'Content-type': 'application/json'},
+                body: JSON.stringify(this.inputData)
+            })
+            .then((res) => {
+                res.json().then((body) => {
+                    if(res.status < 400) {
+                        this.$emit('displayMessage', body.firstName + ' ' + body.lastName + ' was updated')
+                        this.$emit('refreshOutput')
+                        this.clearClicked()
+                    } else {
+                        this.$emit('displayMessage', body.error, 'error')
+                    }
+                })
+                .catch((err) => {
+                    this.$emit('displayMessage', 'Error ' + res.status, 'error')
+                })
+            })
         },
         deleteClicked() {
-
+            fetch('/api?_id=' + this.inputData._id, {
+                method: 'DELETE'
+            })
+            .then((res) => {
+                res.json().then((body) => {
+                    if(res.status < 400) {
+                        this.$emit('displayMessage', body.firstName + ' ' + body.lastName + ' was deleted')
+                        this.$emit('refreshOutput')
+                        this.clearClicked()
+                    } else {
+                        this.$emit('displayMessage', body.error, 'error')
+                    }
+                })
+                .catch((err) => {
+                    this.$emit('displayMessage', 'Error ' + res.status, 'error')
+                })
+            })
         }
     }
 }

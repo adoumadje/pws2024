@@ -106,7 +106,7 @@ app.put('/api', (req, res) => {
 })
 
 app.delete('/api', (req, res) => {
-    let _id = req.body._id
+    let _id = req.query._id
     if(!_id) {
         res.status(400).json({ error: 'no _id!'})
         return

@@ -9,14 +9,19 @@ export default {
   },
   components: { DataInput },
   methods: {
-    
+    onDisplayMessage() {
+
+    },
+    onRefreshOutput() {
+      
+    }
   }
 }
 </script>
 
 <template>
   <div>
-    <DataInput class="horizontalElement"></DataInput>
+    <DataInput @display-message="" @refresh-output="" class="horizontalElement"></DataInput>
   </div>
 </template>
 
