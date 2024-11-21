@@ -28,7 +28,7 @@ export default {
             delete this.inputData._id
             fetch('/api', {
                 method: 'POST',
-                headers: { 'Content-type': 'appliaction/json' },
+                headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify(this.inputData)
             })
             .then((res) => {
