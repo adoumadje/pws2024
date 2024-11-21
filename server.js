@@ -6,13 +6,13 @@ const morgan = require('morgan')
 const mongoose = require('mongoose')
 const uuid = require('uuid')
 
-const config = {
+let config = {
     port: 8000,
     frontend: './pws2024-vue/dist'
 }
 
 try {
-    config = JSON.parse(fs.readFileSync('config.json'))
+    config = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))
     console.log('Configuration from config.json')
 } catch(err) {
     console.log('Using default configuration')
@@ -23,6 +23,9 @@ const app = express()
 app.use(morgan('tiny'))
 app.use(cors())
 app.use(bodyParser.json())
+app.use((err, req, res, next) => {
+    res.status(400).json({ error: err.message })
+})
 
 app.use(express.static(config.frontend))
 
@@ -47,12 +50,77 @@ const personSchema = new mongoose.Schema({
     additionalProperties: false
 })
 
-app.post('/api', (req, res) => {
-    console.log(req.body);
-    
-    res.json({ test: true })
+let Person = null
+
+mongoose.connect(config.dbUrl)
+.then((conn) => {
+    console.log(`Connection to ${config.dbUrl} established`)
+    Person = conn.model('Person', personSchema)
+})
+.catch((err) => {
+    console.error(`Connection to ${config.dbUrl} failed`)
+    process.exit(0)
 })
 
+// Database transactions
+app.get('/api', (req, res) => {
+    Person.find({})
+    .then((rows) => {
+        res.json(rows)
+    })
+    .catch((err) => {
+        res.status(400).json({ error: err.message })
+    })
+})
+
+app.post('/api', (req, res) => {
+    let person = new Person(req.body)
+    let err = person.validateSync()
+    if(err) {
+        res.status(400).json({ error: err.message })
+        return
+    }
+    person.save()
+    .then((row) => {
+        res.json(row)
+    })
+    .catch((err) => {
+        res.status(400).json({ error: err.message })
+    })
+})
+
+app.put('/api', (req, res) => {
+    let _id = req.body._id
+    if(!_id) {
+        res.status(400).json({ error: 'no _id!'})
+        return
+    }
+    delete req.body._id
+    Person.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
+    .then((row) => {
+        res.json(row)
+    })
+    .catch((err) => {
+        res.status(400).json({ error: err.message })
+    })
+})
+
+app.delete('/api', (req, res) => {
+    let _id = req.body._id
+    if(!_id) {
+        res.status(400).json({ error: 'no _id!'})
+        return
+    }
+    Person.findOneAndDelete({_id})
+    .then((row) => {
+        res.json(row)
+    })
+    .catch((err) => {
+        res.status(400).json({ error: err.message })
+    })
+})
+
+// start server
 app.listen(config.port, () => {
     console.log('Backend listening on port', config.port)
 })
