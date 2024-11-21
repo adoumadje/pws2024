@@ -4,10 +4,7 @@ import DataInput from './components/DataInput.vue';
 export default {
   data() {
     return {
-      inputData: {
-        firstName: '',
-        yearOfBirth: 2000
-      }
+      
     }
   },
   components: { DataInput },
