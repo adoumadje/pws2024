@@ -18,7 +18,10 @@ export default {
       this.messageDisplay = true
     },
     onRefreshOutput() {
-
+      this.$refs.dataOuputRef.refresh()
+    },
+    onDataSelected(data) {
+      this.$refs.dataInputRef.importData(data)
     }
   }
 }
@@ -26,8 +29,10 @@ export default {
 
 <template>
   <div class="horizontal">
-    <DataInput @display-message="onDisplayMessage" @refresh-output="onRefreshOutput" class="horizontalElement"></DataInput>
-    <DataOutput class="horizontalElement"></DataOutput>
+    <DataInput ref="dataInputRef" @display-message="onDisplayMessage" @refresh-output="onRefreshOutput" 
+    class="horizontalElement"></DataInput>
+    <DataOutput ref="dataOuputRef" @display-message="onDisplayMessage" @data-selected="onDataSelected" 
+    class="horizontalElement"></DataOutput>
   </div>
   <v-snackbar v-model="messageDisplay" :color="messageColor">
     <div>{{ message }}</div>

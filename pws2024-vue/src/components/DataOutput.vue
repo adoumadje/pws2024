@@ -5,8 +5,31 @@ export default {
             dataGathered: []
         }
     },
+    emits: ['displayMessage', 'dataSelected'],
     methods: {
-
+        refresh() {
+            fetch('/api', {
+                method: 'GET'
+            })
+            .then((res) => {
+                res.json().then((body) => {
+                    if(res.status < 400) {
+                        this.dataGathered = body
+                    } else {
+                        this.$emit('displayMessage', body.error, 'error')
+                    }
+                })
+                .catch((err) => {
+                    this.$emit('displayMessage', 'Error ' + res.status, 'error')
+                })
+            })
+        },
+        dataClicked(data) {
+            this.$emit('dataSelected', data)
+        }
+    },
+    mounted() {
+        this.refresh()
     }
 }
 </script>
@@ -22,7 +45,7 @@ export default {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="data in dataGathered">
+                    <tr v-for="data in dataGathered" @click="dataClicked(data)">
                         <td>{{ data.firstName }}</td><td>{{ data.lastName }}</td>
                         <td>{{ new Date(data.birthDate).toLocaleDateString() }}</td>
                     </tr>

@@ -24,6 +24,10 @@ export default {
         clearClicked() {
             this.inputData = {}
         },
+        importData(data) {
+            this.clearClicked()
+            Object.assign(this.inputData, data)
+        },
         createClicked() {
             delete this.inputData._id
             fetch('/api', {
@@ -113,10 +117,10 @@ export default {
                 <v-btn variant="elevated" @click="clearClicked">Clear</v-btn>
                 <v-btn variant="elevated" color="primary" v-if="!inputData._id" :disabled="!isValid"
                     @click="createClicked">Create</v-btn>
-                <v-btn variant="elevated" color="secondary" v-if="inputData._id" :disabled="!isValid"
-                    @click="updateClicked">Update</v-btn>
                 <v-btn variant="elevated" color="error" v-if="inputData._id"
                     @click="deleteClicked">Delete</v-btn>
+                <v-btn variant="elevated" color="secondary" v-if="inputData._id" :disabled="!isValid"
+                    @click="updateClicked">Update</v-btn>
             </v-card-actions>
         </v-card>
     </v-form>
