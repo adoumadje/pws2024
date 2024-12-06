@@ -1,0 +1,91 @@
+<script>
+
+const personEndpoint = "/api/person"
+
+export default {
+    data() {
+        return {
+            persons: {},
+            person: {},
+            editor: false,
+            itemsPerPage: 10,
+            headers: [
+                {title: 'First name', key: 'firstName', align: 'start', sortable: true},
+                {title: 'Last Name', key: 'lastName', align: 'start'},
+                {title: 'Birth Date', key: 'birthDate', align: 'end'}
+            ],
+            loading: false,
+            search: '',
+            itemsLength: 0,
+            serverItems: [],
+            tableKey: 0
+        }
+    },
+    methods: {
+        loadItems({ page, itemsPerPage, sortBy }) {
+            this.loading = true
+            const skip = (page - 1) * itemsPerPage
+            let queryString = { skip, limit: itemsPerPage, search: this.search }
+            if(sortBy && sortBy[0]) {
+                queryString.sort = sortBy[0].key
+                queryString.order = sortBy[0].order == 'asc' ? 1 : -1
+            }
+            fetch(personEndpoint + '?' + new URLSearchParams(queryString).toString())
+            .then(res => res.json().then(facet => {
+                this.itemsLength = +facet.total
+                this.serverItems = facet.data
+                this.loading = false    
+            }))
+        },
+        clickItem(item, event) {
+            this.person = event.item
+            this.editor = true
+        },
+        add() {
+            this.person = {}
+            this.editor = true
+        },
+        editorClose(text, color) {
+            this.editor = false
+            if(text) {
+                this.$emit('dispalyMessage', text, color)
+            }
+        }
+    },
+    emits: ['dispalyMessage']
+}
+</script>
+
+<template>
+    <v-card variant="outlined">
+        <v-card-title class="d-flex">
+            Persons
+            <v-spacer></v-spacer>
+            <v-btn @click="add">Add</v-btn>
+        </v-card-title>
+        <v-card-text>
+            <v-data-table-server v-model:items-per-page="itemsPerPage" :headers="headers" :items="serverItems"
+            :items-length="itemsLength" :loading="loading" :search="search" :key="tableKey"
+            @update:options="loadItems" @click:row="clickItem"
+            >
+
+            <template #item.birthDate="{ item }">
+                {{ new Date(item.birthDate).toLocaleDateString() }}
+            </template>
+            <template #footer.prepend>
+                <v-text-field v-model="search" class="mr-5" variant="outlined" density="compact" 
+                placeholder="search..." hide-details prepend-icon="mdi-magnify"></v-text-field>
+            </template>
+
+            </v-data-table-server>
+        </v-card-text>
+    </v-card>
+
+    <v-dialog>
+
+    </v-dialog>
+</template>
+
+<style scoped>
+
+</style>

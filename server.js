@@ -33,13 +33,13 @@ const personSchema = new mongoose.Schema({
     _id: { type: String, default: uuid.v4 },
     firstName: { type: String, required: true, validate: {
         validator: (v) => {
-            return /^[A-Z]/.test(v)
+            return /^\p{L}/u.test(v)
         },
-        message: (props) => `${props.value} does not start from capital`
+        message: (props) => `${props.value} does not start from a letter`
     } },
     lastName: { type: String, required: true, validate: {
         validator: (v) => {
-            return /^[A-Za-z]/.test(v)
+            return /^\p{L}/u.test(v)
         },
         message: (props) => `${props.value} does not start from a letter`
     }},
@@ -62,18 +62,50 @@ mongoose.connect(config.dbUrl)
     process.exit(0)
 })
 
+const personEndpoint = '/api/person'
+
 // Database transactions
-app.get('/api', (req, res) => {
-    Person.find({})
-    .then((rows) => {
-        res.json(rows)
+app.get(personEndpoint, (req, res) => {
+    let sort = {}
+    if(req.query.sort) {
+        sort[req.query.sort] = +req.query.order || 1
+    }
+    const matching = {
+        $match: {
+            $or: [
+                {firstName: { $regex: req.query.search || '', $options: 'i' }},
+                { lastName: { $regex: req.query.search || '', $options: 'i'}}
+            ]
+        }
+    }
+
+    const aggregation = [matching]
+
+    aggregation.push({ $match: { firstName: { $regex: req.query.firstName || '' }}})
+    aggregation.push({ $match: { lastName: { $regex: req.query.lastName || '' }}})
+    if(req.query.sort) {
+        aggregation.push({ $sort: sort})
+    }
+    aggregation.push({ $skip: +req.query.skip || 0 })
+    let limit = +req.query.limit
+    if(!isNaN(limit) && limit > 0) {
+        aggregation.push({ $limit: limit})
+    }
+
+    Person.aggregate([{ $facet: {
+        total: [ matching, { $count: 'count'} ],
+        data: aggregation
+    }}])
+    .then(facet => {
+        [facet] = facet
+        facet.total = ( facet.total && facet.total[0] ? facet.total.count : 0) || 0
+        facet.data = facet.data.map(person => new Person(person))
+        res.json(facet)
     })
-    .catch((err) => {
-        res.status(400).json({ error: err.message })
-    })
+    .catch(err => res.status(400).json({error: err.message}))
 })
 
-app.post('/api', (req, res) => {
+app.post(personEndpoint, (req, res) => {
     let person = new Person(req.body)
     let err = person.validateSync()
     if(err) {
@@ -89,7 +121,7 @@ app.post('/api', (req, res) => {
     })
 })
 
-app.put('/api', (req, res) => {
+app.put(personEndpoint, (req, res) => {
     let _id = req.body._id
     if(!_id) {
         res.status(400).json({ error: 'no _id!'})
@@ -105,7 +137,7 @@ app.put('/api', (req, res) => {
     })
 })
 
-app.delete('/api', (req, res) => {
+app.delete(personEndpoint, (req, res) => {
     let _id = req.query._id
     if(!_id) {
         res.status(400).json({ error: 'no _id!'})
