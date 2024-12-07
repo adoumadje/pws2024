@@ -1,4 +1,6 @@
 <script>
+import PersonEditor from './PersonEditor.vue';
+
 
 const personEndpoint = "/api/person"
 
@@ -52,7 +54,8 @@ export default {
             }
         }
     },
-    emits: ['dispalyMessage']
+    emits: ['dispalyMessage'],
+    components: { PersonEditor },
 }
 </script>
 
@@ -81,8 +84,8 @@ export default {
         </v-card-text>
     </v-card>
 
-    <v-dialog>
-
+    <v-dialog v-model="editor" width="50%">
+        <PersonEditor :person="person" @close="editorClose" @list-changed="tableKey++"></PersonEditor>
     </v-dialog>
 </template>
 
