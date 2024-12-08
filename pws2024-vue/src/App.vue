@@ -4,10 +4,19 @@ import PersonList from './components/PersonList.vue';
 export default {
   data() {
     return {
-
+      messageDisplayed: false,
+      messageColor: 'red',
+      message: ''
     }
   },
-  components: {PersonList}
+  components: {PersonList},
+  methods: {
+    onDisplayMessage(text, color) {
+      this.message = text
+      this.messageColor = color
+      this.messageDisplayed = true
+    }
+  }
 }
 </script>
 
@@ -24,11 +33,11 @@ export default {
     </v-navigation-drawer>
 
     <v-main>
-      <router-view ></router-view>
+      <router-view @display-message="onDisplayMessage"></router-view>
     </v-main>
 
     <v-snackbar>
-      <div style="width: 100%; text-align: center;">{{  }}</div>
+      <div style="width: 100%; text-align: center;">{{ message }}</div>
     </v-snackbar>
 
   </v-app>

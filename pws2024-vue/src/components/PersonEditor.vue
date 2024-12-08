@@ -1,4 +1,6 @@
 <script>
+const personEndpoint = 'api/person'
+
 export default {
     data() {
         return {
@@ -17,95 +19,99 @@ export default {
         }
     },
     props: ['person'],
-    emits: ['refreshOutput', 'displayMessage'],
+    emits: ['close', 'listChanged'],
     methods: {
         clear() {
             this.input = { _id: this.input._id }
             this.isValid = false
         },
-        importData(data) {
-            this.clearClicked()
+        close() {
+            this.$emit('close')
+        },
+        setData(data) {
+            this.input = {}
             Object.assign(this.input, data)
         },
-        createClicked() {
-            delete this.input._id
-            fetch('/api', {
+        send() {
+            fetch(personEndpoint, {
                 method: 'POST',
                 headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify(this.input)
             })
             .then((res) => {
-                res.json().then((body) => {
-                    if(res.status < 400) {
-                        this.$emit('displayMessage', body.firstName + ' ' + body.lastName + ' was created')
-                        this.$emit('refreshOutput')
-                        this.clearClicked()
+                res.json().then((data) => {
+                    if(!res.ok) {
+                        this.$emit('close', data.error, 'erro')
                     } else {
-                        this.$emit('displayMessage', body.error, 'error')
+                        this.input = {}
+                        this.$emit('close', `${data.firstName} ${data.lastName} - added`)
+                        this.$emit('listChanged')
                     }
                 })
                 .catch((err) => {
-                    this.$emit('displayMessage', 'Error ' + res.status, 'error')
+                    this.$emit('close', 'Data discarded', 'error')
                 })
             })
         },
-        updateClicked() {
-            fetch('/api', {
+        update() {
+            fetch(personEndpoint, {
                 method: 'PUT',
-                headers: { 'Content-type': 'application/json'},
+                headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify(this.input)
             })
             .then((res) => {
-                res.json().then((body) => {
-                    if(res.status < 400) {
-                        this.$emit('displayMessage', body.firstName + ' ' + body.lastName + ' was updated')
-                        this.$emit('refreshOutput')
-                        this.clearClicked()
+                res.json().then((data) => {
+                    if(!res.ok) {
+                        this.$emit('close', data.error, 'erro')
                     } else {
-                        this.$emit('displayMessage', body.error, 'error')
+                        this.input = {}
+                        this.$emit('close', `${data.firstName} ${data.lastName} - updated`)
+                        this.$emit('listChanged')
                     }
                 })
                 .catch((err) => {
-                    this.$emit('displayMessage', 'Error ' + res.status, 'error')
+                    this.$emit('close', 'Data discarded', 'error')
                 })
             })
         },
-        deleteClicked() {
-            fetch('/api?_id=' + this.input._id, {
+        remove() {
+            fetch(personEndpoint + '?' + new URLSearchParams({_id: this.input._id}), {
                 method: 'DELETE'
             })
             .then((res) => {
-                res.json().then((body) => {
-                    if(res.status < 400) {
-                        this.$emit('displayMessage', body.firstName + ' ' + body.lastName + ' was deleted')
-                        this.$emit('refreshOutput')
-                        this.clearClicked()
+                res.json().then((data) => {
+                    if(!res.ok) {
+                        this.$emit('close', data.error, 'erro')
                     } else {
-                        this.$emit('displayMessage', body.error, 'error')
+                        this.input = {}
+                        this.$emit('close', `${data.firstName} ${data.lastName} - deleted`)
+                        this.$emit('listChanged')
                     }
                 })
                 .catch((err) => {
-                    this.$emit('displayMessage', 'Error ' + res.status, 'error')
+                    this.$emit('close', 'Data discarded', 'error')
                 })
             })
         }
+    },
+    mounted() {
+        Object.assign(this.input, this.person)
     }
 }
 </script>
 
 <template>
     <v-form v-model="isValid">
-        <v-card variant="outlined">
+        <v-card>
             <v-card-title>
-                Enter data
-                <v-spacer></v-spacer>
+                {{ input._id ? 'Edit data' : 'Add data' }}
             </v-card-title>
             <v-card-subtitle>
-                {{ input._id || 'to create' }}
+                {{ input._id || 'new person' }}
             </v-card-subtitle>
             <v-card-text>
                 <v-text-field v-model="input.firstName" label="First Name" variant="outlined"
-                    :rules="[rules.startsWithCapital]"></v-text-field>
+                    :rules="[rules.startsWithLetter]"></v-text-field>
                 <v-text-field v-model="input.lastName" label="Last Name" variant="outlined"
                     :rules="[rules.startsWithLetter]"></v-text-field>
                 <v-text-field v-model="input.birthDate" label="Birth Date" variant="outlined" type="date"
@@ -115,11 +121,12 @@ export default {
                 <v-spacer></v-spacer>
                 <v-btn variant="elevated" @click="clear">Clear</v-btn>
                 <v-btn variant="elevated" color="primary" v-if="!input._id" :disabled="!isValid"
-                    @click="createClicked">Create</v-btn>
-                <v-btn variant="elevated" color="error" v-if="input._id"
-                    @click="deleteClicked">Delete</v-btn>
+                    @click="send">save</v-btn>
                 <v-btn variant="elevated" color="secondary" v-if="input._id" :disabled="!isValid"
-                    @click="updateClicked">Update</v-btn>
+                    @click="update">Update</v-btn>
+                <v-btn variant="elevated" color="error" v-if="input._id"
+                    @click="remove">Delete</v-btn>
+                <v-btn variant="elevated" @click="close">close</v-btn>
             </v-card-actions>
         </v-card>
     </v-form>
