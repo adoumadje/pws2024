@@ -78,7 +78,7 @@ export default {
     </v-navigation-drawer>
 
     <v-main>
-      <router-view @display-message="onDisplayMessage"></router-view>
+      <router-view @display-message="onDisplayMessage" :session="session"></router-view>
     </v-main>
 
     <v-snackbar v-model="messageDisplayed" :color="messageColor" :timeout="5000">
@@ -89,12 +89,12 @@ export default {
       <LoginDialog @close="onLogin"></LoginDialog>
     </v-dialog>
 
-    <v-dialog v-model="loginDialog" width="33%">
+    <v-dialog v-model="logoutDialog" width="33%">
       <LogoutDialog @close="onLogin"></LogoutDialog>
     </v-dialog>
   </v-app>
 
-  <v-snackbar v-model="messageDisplayed" :color="messageColor" :timeout="-1">
+  <v-snackbar v-model="generalError" color="error" timeout="-1">
     <div style="width: 100%; text-align: center;">Backend is not connected</div>
   </v-snackbar>
 </template>

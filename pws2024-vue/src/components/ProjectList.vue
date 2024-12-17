@@ -1,6 +1,6 @@
 <script>
 import ProjectEditor from './ProjectEditor.vue';
-import common from '@/mixins/common';
+import common from '../mixins/common';
 
 
 const projectEndpoint = "/api/project"
@@ -72,19 +72,22 @@ export default {
             <v-btn v-show="checkIfInRole(session, [0])" @click="add">Add</v-btn>
         </v-card-title>
         <v-card-text>
-            <v-data-table-server v-model:items-per-page="itemsPerPage" :headers="headers" :items="serverItems"
-            :items-length="itemsLength" :loading="loading" :search="search" :key="tableKey"
-            @update:options="loadItems" @click:row="clickItem"
-            itemsPerPageText="# items on the page", pageText="{0}-{1} of {2}" density="compact">
+            <v-data-table-server v-model:items-per-page="itemsPerPage" :headers="headers" :items="serverItems" 
+            :items-length="itemsLength" :loading="loading" :search="search" :key="tableKey" 
+            @update:options="loadItems" @click:row="clickItem" 
+            itemsPerPageText="# items on the page" pageText="{0}-{1} of {2}" density="compact"> 
 
             <template #item.startDate="{ item }">
                 {{ new Date(item.startDate).toLocaleDateString() }}
+            </template>
+            <template #item.endDate="{ item }">
+                {{ item.endDate ? new Date(item.endDate).toLocaleDateString() : '' }}
             </template>
             <template #footer.prepend>
                 <v-text-field v-model="search" class="mr-5" variant="outlined" density="compact" 
                 placeholder="search..." hide-details prepend-icon="mdi-magnify"></v-text-field>
             </template>
-
+            
             </v-data-table-server>
         </v-card-text>
     </v-card>

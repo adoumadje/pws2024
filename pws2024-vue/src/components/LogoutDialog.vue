@@ -16,7 +16,6 @@ export default {
                     if(!res.ok) {
                         this.$emit('close', data.error, 'erro')
                     } else {
-                        this.input = {}
                         this.$emit('close', 'Successful logout')
                     }
                 })
@@ -36,7 +35,7 @@ export default {
             <v-card-text>Are you sure?</v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn variant="elevated" color="primary" v-if="!input._id" :disabled="!isValid"
+                <v-btn variant="elevated" color="primary"
                     @click="logout">Logout</v-btn>
                 <v-btn variant="elevated" @click="close">Close</v-btn>
             </v-card-actions>

@@ -47,9 +47,9 @@ export default {
         <v-card>
             <v-card-title>Login</v-card-title>
             <v-card-text>
-                <v-text-field v-model="input.firstName" label="User Name" variant="outlined"
+                <v-text-field v-model="input.username" label="User Name" variant="outlined"
                     :rules="[rules.required]"></v-text-field>
-                <v-text-field v-model="input.birthDate" label="Password" variant="outlined" type="password"
+                <v-text-field v-model="input.password" label="Password" variant="outlined" type="password"
                     :rules="[]"></v-text-field>
             </v-card-text>
             <v-card-actions>

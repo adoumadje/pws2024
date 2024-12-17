@@ -95,7 +95,7 @@ export default {
         }
     },
     mounted() {
-        Object.assign(this.input, this.person)
+        Object.assign(this.input, this.project)
     }
 }
 </script>

@@ -5,6 +5,9 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const mongoose = require('mongoose')
 const uuid = require('uuid')
+const expressSession = require('express-session')
+const passport = require('passport')
+const passportJson = require('passport-json')
 
 let config = {
     port: 8000,
@@ -18,6 +21,9 @@ try {
     console.log('Using default configuration')
 }
 
+// my own module
+const auth = require('./auth')
+
 const app = express()
 
 app.use(morgan('tiny'))
@@ -27,7 +33,22 @@ app.use((err, req, res, next) => {
     res.status(400).json({ error: err.message })
 })
 
+// initialize mechanisms of sessions handling and authorization
+app.use(expressSession({ secret: config.dbUrl, resave: false, saveUninitialized: true }))
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new passportJson.Strategy(auth.checkCredentials))
+passport.serializeUser(auth.serialize)
+passport.deserializeUser(auth.deserialize)
+
 app.use(express.static(config.frontend))
+
+// authentication endpoints
+const authEndpoint = '/api/auth'
+
+app.get(authEndpoint, auth.whoami)
+app.post(authEndpoint, passport.authenticate('json', { failWithError: true }), auth.login, auth.errorHandler)
+app.delete(authEndpoint, auth.logout)
 
 const personSchema = new mongoose.Schema({
     _id: { type: String, default: uuid.v4 },
@@ -51,16 +72,6 @@ const personSchema = new mongoose.Schema({
 })
 
 let Person = null
-
-mongoose.connect(config.dbUrl)
-.then((conn) => {
-    console.log(`Connection to ${config.dbUrl} established`)
-    Person = conn.model('Person', personSchema)
-})
-.catch((err) => {
-    console.error(`Connection to ${config.dbUrl} failed`)
-    process.exit(0)
-})
 
 // Person Requests
 const personEndpoint = '/api/person'
@@ -209,7 +220,7 @@ app.get(projectEndpoint, (req, res) => {
 
 app.post(projectEndpoint, (req, res) => {
     let project = new Project(req.body)
-    let err = person.validateSync()
+    let err = project.validateSync()
     if(err) {
         res.status(400).json({ error: err.message })
         return
@@ -230,7 +241,7 @@ app.put(projectEndpoint, (req, res) => {
         return
     }
     delete req.body._id
-    Person.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
+    Project.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
     .then((row) => {
         res.json(row)
     })
@@ -252,6 +263,18 @@ app.delete(projectEndpoint, (req, res) => {
     .catch((err) => {
         res.status(400).json({ error: err.message })
     })
+})
+
+// database connection
+mongoose.connect(config.dbUrl)
+.then((conn) => {
+    console.log(`Connection to ${config.dbUrl} established`)
+    Person = conn.model('Person', personSchema)
+    Project = conn.model('Project', projectSchema)
+})
+.catch((err) => {
+    console.error(`Connection to ${config.dbUrl} failed`)
+    process.exit(0)
 })
 
 // start server

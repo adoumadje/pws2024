@@ -70,7 +70,7 @@ export default {
             <v-data-table-server v-model:items-per-page="itemsPerPage" :headers="headers" :items="serverItems"
             :items-length="itemsLength" :loading="loading" :search="search" :key="tableKey"
             @update:options="loadItems" @click:row="clickItem"
-            itemsPerPageText="# items on the page", pageText="{0}-{1} of {2}" density="compact">
+            itemsPerPageText="# items on the page" pageText="{0}-{1} of {2}" density="compact">
 
             <template #item.birthDate="{ item }">
                 {{ new Date(item.birthDate).toLocaleDateString() }}

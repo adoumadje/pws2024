@@ -22,7 +22,7 @@ const getIntersection = (arr1, arr2) => {
 User.findOne({username: 'admin'})
 .then((user) => {
     if(!user) {
-        const admin = new User({username: 'admin', password: 'admin', roles: [0]})
+        const admin = new User({username: 'admin', password: makeHash('admin'), roles: [0]})
         admin.save()
     }
 })
@@ -32,10 +32,11 @@ User.findOne({username: 'admin'})
 User.findOne({username: 'user'})
 .then((res) => {
     if(!res) {
-        const user = new User({username: 'user', password: 'user', roles: [1]})
+        const user = new User({username: 'user', password: makeHash('user'), roles: [1]})
         user.save()
     }
 })
+.catch(err => {})
 
 const auth = module.exports = {
     makeHash,
