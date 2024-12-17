@@ -121,12 +121,12 @@ export default {
                 <v-spacer></v-spacer>
                 <v-btn variant="elevated" @click="clear">Clear</v-btn>
                 <v-btn variant="elevated" color="primary" v-if="!input._id" :disabled="!isValid"
-                    @click="send">save</v-btn>
+                    @click="send">Save</v-btn>
                 <v-btn variant="elevated" color="secondary" v-if="input._id" :disabled="!isValid"
                     @click="update">Update</v-btn>
                 <v-btn variant="elevated" color="error" v-if="input._id"
                     @click="remove">Delete</v-btn>
-                <v-btn variant="elevated" @click="close">close</v-btn>
+                <v-btn variant="elevated" @click="close">Close</v-btn>
             </v-card-actions>
         </v-card>
     </v-form>

@@ -126,7 +126,7 @@ export default {
                     @click="update">Update</v-btn>
                 <v-btn variant="elevated" color="error" v-if="input._id"
                     @click="remove">Delete</v-btn>
-                <v-btn variant="elevated" @click="close">close</v-btn>
+                <v-btn variant="elevated" @click="close">Close</v-btn>
             </v-card-actions>
         </v-card>
     </v-form>
