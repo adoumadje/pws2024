@@ -12,8 +12,8 @@ export default {
                     return pattern.test(value) || 'It should start with a letter'
                 },
                 validDate: (value) => {
-                    const data = new Date(value)
-                    return date <= new Date() || 'Use a proper date'
+                    const date = new Date(value)
+                    return !!date || 'Use a proper date'
                 }
             }
         }
