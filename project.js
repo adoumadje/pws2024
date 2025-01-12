@@ -16,7 +16,8 @@ module.exports = {
                 message: (props) => `${props.value} does not start from a letter`
             } },
             startDate: { type: Date, required: true, transform: (v) => v.toISOString().substr(0, 10) },
-            endDate: { type: Date, required: true, transform: (v) => v.toISOString().substr(0, 10) }
+            endDate: { type: Date, required: true, transform: (v) => v.toISOString().substr(0, 10) },
+            contractor_ids: { type: [String], required: false, default: [] }
         },
         {
             versionKey: false,

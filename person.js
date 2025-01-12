@@ -56,6 +56,11 @@ module.exports = {
         if(!isNaN(limit) && limit > 0) {
             aggregation.push({ $limit: limit})
         }
+        aggregation.push(
+            { $lookup: { from: 'project', localField: '_id', foreignField: 'contractor_ids', as: 'projects' } },
+            { $set: { project_ids: { $map: { input: '$projects', as: 'item', in: '$$item._id' } } } },
+            { $unset: 'projects' }
+        )
     
         this.model.aggregate([{ $facet: {
             total: [ matching, { $count: 'count'} ],
