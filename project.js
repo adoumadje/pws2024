@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const uuid = require('uuid')
 
-module.exports = {
+const project = module.exports = {
     schema: null,
     model: null,
     endpoint: '/api/project',
@@ -23,7 +23,7 @@ module.exports = {
             versionKey: false,
             additionalProperties: false
         })
-        this.model = conn.model('Project', this.schema)
+        project.model = conn.model('Project', this.schema)
     },
 
     get: (req, res) => {
@@ -46,27 +46,28 @@ module.exports = {
             aggregation.push({ $limit: limit})
         }
     
-        this.model.aggregate([{ $facet: {
+        project.model.aggregate([{ $facet: {
             total: [ matching, { $count: 'count'} ],
             data: aggregation
         }}])
         .then(facet => {
             [facet] = facet
             facet.total = ( facet.total && facet.total[0] ? facet.total.count : 0) || 0
-            facet.data = facet.data.map(project => new this.model(project))
+            facet.data = facet.data.map(item => new project.model(item).toObejct())
             res.json(facet)
         })
+        .catch(err => res.status(400).json({ error: err.message }))
     },
 
     post: (req, res) => {
-        let project = new this.model(req.body)
-        let err = project.validateSync()
+        let item = new project.model(req.body)
+        let err = item.validateSync()
         if(err) {
             res.status(400).json({ error: err.message })
             return
         }
-        project.save()
-        .then(() => res.status(201).json(project))
+        item.save()
+        .then(row => res.json(row))
         .catch(err => res.status(400).json({ error: err.message }))
     },
 
@@ -77,7 +78,7 @@ module.exports = {
             return
         }
         delete req.body._id
-        this.model.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
+        project.model.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
         .then((row) => {
             res.json(row)
         })
@@ -92,7 +93,7 @@ module.exports = {
             res.status(400).json({ error: 'no _id!'})
             return
         }
-        this.model.findOneAndDelete({_id})
+        project.model.findOneAndDelete({_id})
         .then((row) => {
             res.json(row)
         })

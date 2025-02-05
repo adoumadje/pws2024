@@ -4,18 +4,21 @@ import common from '../mixins/common';
 
 
 const projectEndpoint = "/api/project"
+const personEndpoint = "/api/person"
 
 export default {
     data() {
         return {
-            projects: {},
+            projects: [],
             project: {},
+            persons: [],
             editor: false,
             itemsPerPage: 10,
             headers: [
                 {title: 'Name', key: 'name', align: 'start', sortable: true},
                 {title: 'Start Date', key: 'startDate', align: 'end'},
-                {title: 'End Date', key: 'endDate', align: 'end'}
+                {title: 'End Date', key: 'endDate', align: 'end'},
+                {title: '#Contractors', key: 'contractor_ids', align: 'end'}
             ],
             loading: false,
             search: '',
@@ -57,6 +60,12 @@ export default {
             }
         }
     },
+    mounted() {
+        fetch(personEndpoint + '?' + new URLSearchParams({ sort: 'firstName', order: 1 }).toString())
+        .then(res => res.json().then(facet => {
+            this.persons = facet.data
+        }))
+    },
     emits: ['dispalyMessage'],
     mixins: [common],
     props: ['session'],
@@ -82,6 +91,9 @@ export default {
             </template>
             <template #item.endDate="{ item }">
                 {{ item.endDate ? new Date(item.endDate).toLocaleDateString() : '' }}
+            </template>
+            <template #item.contractor_ids="{ item }">
+                {{ item.contractor_ids ? item.contractor_ids.length : 0 }}
             </template>
             <template #footer.prepend>
                 <v-text-field v-model="search" class="mr-5" variant="outlined" density="compact" 

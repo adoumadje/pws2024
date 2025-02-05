@@ -1,5 +1,6 @@
 <script>
 const projectEndpoint = 'api/project'
+const personEndpoint = 'api/person'
 
 export default {
     data() {
