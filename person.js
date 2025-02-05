@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
 const uuid = require('uuid')
 
-module.exports = {
+const project = require('./project')
+
+const person = module.exports = {
     schema: null,
     model: null,
     endpoint: '/api/person',
@@ -27,7 +29,7 @@ module.exports = {
             versionKey: false,
             additionalProperties: false
         })
-        this.model = conn.model('Person', this.schema)
+        person.model = conn.model('Person', this.schema)
     },
 
     get: (req, res) => {
@@ -35,19 +37,28 @@ module.exports = {
         if(req.query.sort) {
             sort[req.query.sort] = +req.query.order || 1
         }
-        const matching = {
-            $match: {
-                $or: [
-                    {firstName: { $regex: req.query.search || '', $options: 'i' }},
-                    { lastName: { $regex: req.query.search || '', $options: 'i'}}
-                ]
+        const minprojects = +req.query.minprojects || 0
+        const matching = [
+            { $lookup: { from: 'project', localField: '_id', foreignField: 'contractor_ids', as: 'projects' } },
+            { $set: { project_ids: { $map: { input: '$projects', as: 'item', in: '$$item._id' } } } },
+            { $unset: 'projects' },
+            {
+                $match: {
+                    $and: [
+                        {
+                            $or: [
+                                {firstName: { $regex: req.query.search || '', $options: 'i' }},
+                                { lastName: { $regex: req.query.search || '', $options: 'i'}}
+                            ]
+                        },
+                        { $expr: { $gte: [{ $size: '$project_ids' }, minprojects] }}
+                    ]
+                }
             }
-        }
+        ]
     
-        const aggregation = [matching]
+        const aggregation = [...matching]
     
-        aggregation.push({ $match: { firstName: { $regex: req.query.firstName || '' }}})
-        aggregation.push({ $match: { lastName: { $regex: req.query.lastName || '' }}})
         if(req.query.sort) {
             aggregation.push({ $sort: sort})
         }
@@ -56,33 +67,32 @@ module.exports = {
         if(!isNaN(limit) && limit > 0) {
             aggregation.push({ $limit: limit})
         }
-        aggregation.push(
-            { $lookup: { from: 'project', localField: '_id', foreignField: 'contractor_ids', as: 'projects' } },
-            { $set: { project_ids: { $map: { input: '$projects', as: 'item', in: '$$item._id' } } } },
-            { $unset: 'projects' }
-        )
     
-        this.model.aggregate([{ $facet: {
+        person.model.aggregate([{ $facet: {
             total: [ matching, { $count: 'count'} ],
             data: aggregation
         }}])
         .then(facet => {
             [facet] = facet
             facet.total = ( facet.total && facet.total[0] ? facet.total.count : 0) || 0
-            facet.data = facet.data.map(person => new this.model(person))
+            facet.data = facet.data.map(item => {
+                const newItem = new person.model(item).toObject()
+                newItem.project_ids = item.project_ids
+                return newItem
+            })
             res.json(facet)
         })
         .catch(err => res.status(400).json({error: err.message}))
     },
 
     post: (req, res) => {
-        let person = new this.model(req.body)
-        let err = person.validateSync()
+        let item = new person.model(req.body)
+        let err = item.validateSync()
         if(err) {
             res.status(400).json({ error: err.message })
             return
         }
-        person.save()
+        item.save()
         .then((row) => {
             res.json(row)
         })
@@ -98,7 +108,7 @@ module.exports = {
             return
         }
         delete req.body._id
-        this.model.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
+        person.model.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
         .then((row) => {
             res.json(row)
         })
@@ -113,9 +123,15 @@ module.exports = {
             res.status(400).json({ error: 'no _id!'})
             return
         }
-        this.model.findOneAndDelete({_id})
+        person.model.findOneAndDelete({_id})
         .then((row) => {
-            res.json(row)
+            project.model.updateMany({contractor_ids: _id}, { $pull: { contractor_ids: _id }})
+            .then(() => {
+                res.json(row)
+            })
+            .catch((err) => {
+                res.status(400).json({  error: err.message })
+            })
         })
         .catch((err) => {
             res.status(400).json({ error: err.message })
