@@ -5,6 +5,7 @@ const personEndpoint = 'api/person'
 export default {
     data() {
         return {
+            personItems: [],
             input: {},
             isValid: false,
             rules: {
@@ -97,6 +98,10 @@ export default {
     },
     mounted() {
         Object.assign(this.input, this.project)
+        fetch(personEndpoint + '?'  + new URLSearchParams({sort: 'lastName', order: 1}).toString())
+        .then(res => res.json().then(facet => {
+            this.personItems = facet.data
+        }))
     }
 }
 </script>
@@ -117,6 +122,8 @@ export default {
                     :rules="[rules.validDate]"></v-text-field>
                 <v-text-field v-model="input.endDate" label="End Date" variant="outlined" type="date"
                     :rules="[rules.validDate]"></v-text-field>
+                <v-autocomplete variant="outlined" v-model="input.contractor_ids" chips label="contractors" multiple :items="personItems" :item-title="item => item.firstName + ' ' + item.lastName" item-value="_id"
+                    ></v-autocomplete>
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
