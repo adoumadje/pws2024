@@ -7,7 +7,7 @@ const project = module.exports = {
     endpoint: '/api/project',
 
     init: conn => {
-        this.schema = new mongoose.Schema({
+        project.schema = new mongoose.Schema({
             _id: { type: String, default: uuid.v4 },
             name: { type: String, required: true, validate: {
                 validator: (v) => {
@@ -23,7 +23,7 @@ const project = module.exports = {
             versionKey: false,
             additionalProperties: false
         })
-        project.model = conn.model('Project', this.schema)
+        project.model = conn.model('Project', project.schema)
     },
 
     get: (req, res) => {
@@ -52,8 +52,9 @@ const project = module.exports = {
         }}])
         .then(facet => {
             [facet] = facet
-            facet.total = ( facet.total && facet.total[0] ? facet.total.count : 0) || 0
-            facet.data = facet.data.map(item => new project.model(item).toObejct())
+            facet.total = ( facet.total && facet.total[0] ? facet.total[0].count : 0) || 0
+            facet.data = facet.data.map(item => new project.model(item).toObject())
+            console.log(facet.data)
             res.json(facet)
         })
         .catch(err => res.status(400).json({ error: err.message }))

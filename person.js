@@ -9,7 +9,7 @@ const person = module.exports = {
     endpoint: '/api/person',
 
     init: conn => {
-        this.schema = new mongoose.Schema({
+        person.schema = new mongoose.Schema({
             _id: { type: String, default: uuid.v4 },
             firstName: { type: String, required: true, validate: {
                 validator: (v) => {
@@ -29,7 +29,7 @@ const person = module.exports = {
             versionKey: false,
             additionalProperties: false
         })
-        person.model = conn.model('Person', this.schema)
+        person.model = conn.model('Person', person.schema)
     },
 
     get: (req, res) => {
@@ -42,15 +42,12 @@ const person = module.exports = {
             { $lookup: { from: 'project', localField: '_id', foreignField: 'contractor_ids', as: 'projects' } },
             { $set: { project_ids: { $map: { input: '$projects', as: 'item', in: '$$item._id' } } } },
             { $unset: 'projects' },
-            {
-                $match: {
+            { $match: {
                     $and: [
-                        {
-                            $or: [
+                        { $or: [
                                 {firstName: { $regex: req.query.search || '', $options: 'i' }},
                                 { lastName: { $regex: req.query.search || '', $options: 'i'}}
-                            ]
-                        },
+                        ]},
                         { $expr: { $gte: [{ $size: '$project_ids' }, minprojects] }}
                     ]
                 }
@@ -69,12 +66,12 @@ const person = module.exports = {
         }
     
         person.model.aggregate([{ $facet: {
-            total: [ matching, { $count: 'count'} ],
+            total: [ ...matching, { $count: 'count'} ],
             data: aggregation
         }}])
         .then(facet => {
             [facet] = facet
-            facet.total = ( facet.total && facet.total[0] ? facet.total.count : 0) || 0
+            facet.total = ( facet.total && facet.total[0] ? facet.total[0].count : 0) || 0
             facet.data = facet.data.map(item => {
                 const newItem = new person.model(item).toObject()
                 newItem.project_ids = item.project_ids
