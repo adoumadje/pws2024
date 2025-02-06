@@ -38,7 +38,6 @@ export default {
             }
             fetch(projectEndpoint + '?' + new URLSearchParams(queryString).toString())
             .then(res => res.json().then(facet => {
-                console.log(facet)
                 this.itemsLength = +facet.total
                 this.serverItems = facet.data
                 this.loading = false    

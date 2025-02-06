@@ -39,7 +39,7 @@ const person = module.exports = {
         }
         const minprojects = +req.query.minprojects || 0
         const matching = [
-            { $lookup: { from: 'project', localField: '_id', foreignField: 'contractor_ids', as: 'projects' } },
+            { $lookup: { from: 'projects', localField: '_id', foreignField: 'contractor_ids', as: 'projects' } },
             { $set: { project_ids: { $map: { input: '$projects', as: 'item', in: '$$item._id' } } } },
             { $unset: 'projects' },
             { $match: {
@@ -48,7 +48,8 @@ const person = module.exports = {
                                 {firstName: { $regex: req.query.search || '', $options: 'i' }},
                                 { lastName: { $regex: req.query.search || '', $options: 'i'}}
                         ]},
-                        { $expr: { $gte: [{ $size: '$project_ids' }, minprojects] }}
+                        { $expr: { $gte: [{ $size: '$project_ids' }, minprojects] }},
+                        ...(req.query.project_id ? [{ project_ids: { $in: [req.query.project_id] } }] : [])
                     ]
                 }
             }

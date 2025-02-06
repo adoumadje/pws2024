@@ -54,7 +54,6 @@ const project = module.exports = {
             [facet] = facet
             facet.total = ( facet.total && facet.total[0] ? facet.total[0].count : 0) || 0
             facet.data = facet.data.map(item => new project.model(item).toObject())
-            console.log(facet.data)
             res.json(facet)
         })
         .catch(err => res.status(400).json({ error: err.message }))
