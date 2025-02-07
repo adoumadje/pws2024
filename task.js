@@ -1,15 +1,13 @@
 const mongoose = require('mongoose')
 const uuid = require('uuid')
 
-const task = require('./task')
-
-const project = module.exports = {
+const task = module.exports = {
     schema: null,
     model: null,
-    endpoint: '/api/project',
+    endpoint: '/api/task',
 
     init: conn => {
-        project.schema = new mongoose.Schema({
+        task.schema = new mongoose.Schema({
             _id: { type: String, default: uuid.v4 },
             name: { type: String, required: true, validate: {
                 validator: (v) => {
@@ -18,14 +16,15 @@ const project = module.exports = {
                 message: (props) => `${props.value} does not start from a letter`
             } },
             startDate: { type: Date, required: true, transform: (v) => v.toISOString().substr(0, 10) },
-            endDate: { type: Date, required: true, transform: (v) => v.toISOString().substr(0, 10) },
+            endDate: { type: Date, required: false, transform: (v) => v.toISOString().substr(0, 10) },
+            project_id: { type: String, required: true },
             contractor_ids: { type: [String], required: false, default: [] }
         },
         {
             versionKey: false,
             additionalProperties: false
         })
-        project.model = conn.model('Project', project.schema)
+        task.model = conn.model('Task', task.schema)
     },
 
     get: (req, res) => {
@@ -33,14 +32,14 @@ const project = module.exports = {
         if(req.query.sort) {
             sort[req.query.sort] = +req.query.order || 1
         }
-        const matching = [
-            { $lookup: { from: 'tasks', localField: '_id', foreignField: 'project_id', as: 'tasks' } },
-            { $set: { task_ids: { $map: { input: '$tasks', as: 'item', in: '$$item._id' } } } },
-            { $unset: 'tasks' },
-            {$match: {name: { $regex: req.query.search || '', $options: 'i' }}}
-        ]
+        const matching = {
+            $match: {
+                project_id: req.query.project_id,
+                ...(req.query.search ? {name: { $regex: req.query.search || '', $options: 'i' }} : {})
+            }
+        }
     
-        const aggregation = [...matching]
+        const aggregation = [matching]
     
         if(req.query.sort) {
             aggregation.push({ $sort: sort})
@@ -51,25 +50,21 @@ const project = module.exports = {
             aggregation.push({ $limit: limit})
         }
     
-        project.model.aggregate([{ $facet: {
+        task.model.aggregate([{ $facet: {
             total: [ matching, { $count: 'count'} ],
             data: aggregation
         }}])
         .then(facet => {
             [facet] = facet
             facet.total = ( facet.total && facet.total[0] ? facet.total[0].count : 0) || 0
-            facet.data = facet.data.map(item => {
-                const newItem = new project.model(item).toObject()
-                newItem.task_ids = item.task_ids
-                return newItem
-            })
+            facet.data = facet.data.map(item => new task.model(item).toObject())
             res.json(facet)
         })
         .catch(err => res.status(400).json({ error: err.message }))
     },
 
     post: (req, res) => {
-        let item = new project.model(req.body)
+        let item = new task.model(req.body)
         let err = item.validateSync()
         if(err) {
             res.status(400).json({ error: err.message })
@@ -87,7 +82,7 @@ const project = module.exports = {
             return
         }
         delete req.body._id
-        project.model.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
+        task.model.findOneAndUpdate({_id}, { $set: req.body }, { new: true, runValidators: true })
         .then((row) => {
             res.json(row)
         })
@@ -102,15 +97,9 @@ const project = module.exports = {
             res.status(400).json({ error: 'no _id!'})
             return
         }
-        project.model.findOneAndDelete({_id})
+        task.model.findOneAndDelete({_id})
         .then((row) => {
-            task.model.deleteMany({ project_ids: { $in: [_id] } })
-            .then(() => {
-                res.json(row)
-            })
-            .catch((err) => {
-                res.status(400).json({ error: err.message })
-            })
+            res.json(row)
         })
         .catch((err) => {
             res.status(400).json({ error: err.message })

@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const uuid = require('uuid')
 
 const project = require('./project')
+const task = require('./task')
 
 const person = module.exports = {
     schema: null,
@@ -42,6 +43,9 @@ const person = module.exports = {
             { $lookup: { from: 'projects', localField: '_id', foreignField: 'contractor_ids', as: 'projects' } },
             { $set: { project_ids: { $map: { input: '$projects', as: 'item', in: '$$item._id' } } } },
             { $unset: 'projects' },
+            { $lookup: { from: 'tasks', localField: '_id', foreignField: 'contractor_ids', as: 'tasks' } },
+            { $set: { task_ids: { $map: { input: '$tasks', as: 'item', in: '$$item._id' } } } },
+            { $unset: 'tasks' },
             { $match: {
                     $and: [
                         { $or: [
@@ -76,6 +80,7 @@ const person = module.exports = {
             facet.data = facet.data.map(item => {
                 const newItem = new person.model(item).toObject()
                 newItem.project_ids = item.project_ids
+                newItem.task_ids = item.task_ids
                 return newItem
             })
             res.json(facet)
@@ -125,7 +130,13 @@ const person = module.exports = {
         .then((row) => {
             project.model.updateMany({contractor_ids: _id}, { $pull: { contractor_ids: _id }})
             .then(() => {
-                res.json(row)
+                task.model.updateMany({contractor_ids: _id}, { $pull: { contractor_ids: _id }})
+                .then(() => {
+                    res.json(row)
+                })
+                .catch((err) => {
+                    res.status(400).json({ error: err.message })
+                })
             })
             .catch((err) => {
                 res.status(400).json({  error: err.message })
