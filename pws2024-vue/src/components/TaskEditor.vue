@@ -1,5 +1,5 @@
 <script>
-const projectEndpoint = 'api/project'
+const taskEndpoint = 'api/task'
 const personEndpoint = 'api/person'
 
 export default {
@@ -20,7 +20,7 @@ export default {
             }
         }
     },
-    props: ['project'],
+    props: ['task'],
     emits: ['close', 'listChanged'],
     methods: {
         clear() {
@@ -35,7 +35,7 @@ export default {
             Object.assign(this.input, data)
         },
         send() {
-            fetch(projectEndpoint, {
+            fetch(taskEndpoint, {
                 method: 'POST',
                 headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify(this.input)
@@ -56,7 +56,7 @@ export default {
             })
         },
         update() {
-            fetch(projectEndpoint, {
+            fetch(taskEndpoint, {
                 method: 'PUT',
                 headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify(this.input)
@@ -77,7 +77,7 @@ export default {
             })
         },
         remove() {
-            fetch(projectEndpoint + '?' + new URLSearchParams({_id: this.input._id}), {
+            fetch(taskEndpoint + '?' + new URLSearchParams({_id: this.input._id}), {
                 method: 'DELETE'
             })
             .then((res) => {
@@ -97,7 +97,7 @@ export default {
         }
     },
     mounted() {
-        Object.assign(this.input, this.project)
+        Object.assign(this.input, this.task)
         fetch(personEndpoint + '?'  + new URLSearchParams({sort: 'lastName', order: 1}).toString())
         .then(res => res.json().then(facet => {
             this.personItems = facet.data
@@ -113,7 +113,7 @@ export default {
                 {{ input._id ? 'Edit data' : 'Add data' }}
             </v-card-title>
             <v-card-subtitle>
-                {{ input._id || 'new project' }}
+                {{ input._id || 'new task' }}
             </v-card-subtitle>
             <v-card-text>
                 <v-text-field v-model="input.name" label="Name" variant="outlined"

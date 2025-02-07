@@ -25,6 +25,7 @@ try {
 const auth = require('./auth')
 const person = require('./person')
 const project = require('./project')
+const task = require('./task')
 
 const app = express()
 
@@ -64,6 +65,12 @@ app.post(project.endpoint, auth.checkIfInRole([0]), project.post)
 app.put(project.endpoint, auth.checkIfInRole([0]), project.put)
 app.delete(project.endpoint, auth.checkIfInRole([0]), project.delete)
 
+// Task Endpoints
+app.get(task.endpoint, task.get)
+app.post(task.endpoint, auth.checkIfInRole([0]), task.post)
+app.put(task.endpoint, auth.checkIfInRole([0]), task.put)
+app.delete(task.endpoint, auth.checkIfInRole([0]), task.delete)
+
 // database connection
 mongoose.connect(config.dbUrl)
 .then((conn) => {
@@ -71,6 +78,7 @@ mongoose.connect(config.dbUrl)
 
     person.init(conn)
     project.init(conn)
+    task.init(conn)
 })
 .catch((err) => {
     console.error(`Connection to ${config.dbUrl} failed`)

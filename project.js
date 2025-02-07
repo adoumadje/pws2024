@@ -52,7 +52,7 @@ const project = module.exports = {
         }
     
         project.model.aggregate([{ $facet: {
-            total: [ matching, { $count: 'count'} ],
+            total: [ ...matching, { $count: 'count'} ],
             data: aggregation
         }}])
         .then(facet => {

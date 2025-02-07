@@ -43,6 +43,9 @@ export default {
                 this.serverItems = facet.data
                 this.loading = false    
             }))
+            .catch(err => {
+                console.error(err)
+            })
         },
         clickItem(item, event) {
             if(this.checkIfInRole(this.session, [0])) {
