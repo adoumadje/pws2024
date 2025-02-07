@@ -21,7 +21,8 @@ export default {
                 {title: 'First name', key: 'firstName', align: 'start', sortable: true},
                 {title: 'Last Name', key: 'lastName', align: 'start'},
                 {title: 'Birth Date', key: 'birthDate', align: 'end'},
-                {title: '#Projects', key: 'project_ids', align: 'end'}
+                {title: '#Projects', key: 'project_ids', align: 'end'},
+                {title: '#Tasks', key: 'task_ids', align: 'end'}
             ],
             loading: false,
             search: '',
@@ -87,6 +88,9 @@ export default {
             </template>
             <template #item.project_ids="{ item }">
                 {{ item.project_ids ? item.project_ids.length : 0 }}
+            </template>
+            <template #item.task_ids="{ item }">
+                {{ item.task_ids ? item.task_ids.length : 0 }}
             </template>
             <template #footer.prepend>
                 <v-text-field v-model="search" class="mr-5" variant="outlined" density="compact" 
