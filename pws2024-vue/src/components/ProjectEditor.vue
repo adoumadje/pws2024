@@ -1,4 +1,6 @@
 <script>
+import TaskList from './TaskList.vue';
+
 const projectEndpoint = 'api/project'
 const personEndpoint = 'api/person'
 
@@ -20,8 +22,9 @@ export default {
             }
         }
     },
-    props: ['project'],
+    props: ['project', 'session'],
     emits: ['close', 'listChanged'],
+    components: { TaskList },
     methods: {
         clear() {
             this.input = { _id: this.input._id }
@@ -33,6 +36,9 @@ export default {
         setData(data) {
             this.input = {}
             Object.assign(this.input, data)
+        },
+        onListChanged() {
+            this.$emit('listChanged')
         },
         send() {
             fetch(projectEndpoint, {
@@ -125,7 +131,7 @@ export default {
                 <v-autocomplete variant="outlined" v-model="input.contractor_ids" chips label="contractors" multiple :items="personItems" :item-title="item => item.firstName + ' ' + item.lastName" item-value="_id"
                 ></v-autocomplete>
 
-                
+                <TaskList :project="project" :session="session" @list-changed="onListChanged"></TaskList>
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>

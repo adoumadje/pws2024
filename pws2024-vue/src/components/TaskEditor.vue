@@ -20,7 +20,7 @@ export default {
             }
         }
     },
-    props: ['task'],
+    props: ['task', 'project'],
     emits: ['close', 'listChanged'],
     methods: {
         clear() {
@@ -51,6 +51,7 @@ export default {
                     }
                 })
                 .catch((err) => {
+                    console.log(err)
                     this.$emit('close', 'Data discarded', 'error')
                 })
             })
@@ -81,6 +82,7 @@ export default {
                 method: 'DELETE'
             })
             .then((res) => {
+                console.log(res)
                 res.json().then((data) => {
                     if(!res.ok) {
                         this.$emit('close', data.error, 'erro')
@@ -98,7 +100,9 @@ export default {
     },
     mounted() {
         Object.assign(this.input, this.task)
-        fetch(personEndpoint + '?'  + new URLSearchParams({sort: 'lastName', order: 1}).toString())
+        this.input.project_id = this.project._id
+        fetch(personEndpoint + '?'  + new URLSearchParams({ project_id: this.project._id, 
+            sort: 'lastName', order: 1}).toString())
         .then(res => res.json().then(facet => {
             this.personItems = facet.data
         }))

@@ -112,7 +112,7 @@ export default {
     </v-card>
 
     <v-dialog v-model="editor" width="50%">
-        <ProjectEditor :project="project" @close="editorClose" @list-changed="tableKey++"></ProjectEditor>
+        <ProjectEditor :project="project" :session="session" @close="editorClose" @list-changed="tableKey++"></ProjectEditor>
     </v-dialog>
 </template>
 

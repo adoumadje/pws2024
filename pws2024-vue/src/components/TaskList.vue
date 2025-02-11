@@ -31,7 +31,7 @@ export default {
         loadItems({ page, itemsPerPage, sortBy }) {
             this.loading = true
             const skip = (page - 1) * itemsPerPage
-            let queryString = { skip, limit: itemsPerPage, search: this.search }
+            let queryString = { skip, limit: itemsPerPage, search: this.search, project_id: this.project._id }
             if(sortBy && sortBy[0]) {
                 queryString.sort = sortBy[0].key
                 queryString.order = sortBy[0].order == 'asc' ? 1 : -1
@@ -46,6 +46,12 @@ export default {
                 console.error(err)
             })
         },
+
+        onListChanged() {
+            this.tableKey++
+            this.$emit('listChanged')
+        },
+
         clickItem(item, event) {
             if(this.checkIfInRole(this.session, [0])) {
                 this.task = event.item
@@ -64,14 +70,15 @@ export default {
         }
     },
     mounted() {
-        fetch(personEndpoint + '?' + new URLSearchParams({ sort: 'firstName', order: 1 }).toString())
+        fetch(personEndpoint + '?' + new URLSearchParams({ project_id: this.project._id,
+            sort: 'firstName', order: 1 }).toString())
         .then(res => res.json().then(facet => {
             this.persons = facet.data
         }))
     },
-    emits: ['dispalyMessage'],
+    emits: ['dispalyMessage', 'listChanged'],
     mixins: [common],
-    props: ['session'],
+    props: ['session', 'project'],
     components: { TaskEditor },
 }
 </script>
@@ -81,7 +88,7 @@ export default {
         <v-card-title class="d-flex">
             tasks
             <v-spacer></v-spacer>
-            <v-btn v-show="checkIfInRole(session, [0])" @click="add">Add</v-btn>
+            <v-btn v-show="checkIfInRole(session, [0]) && project._id" @click="add">Add</v-btn>
         </v-card-title>
         <v-card-text>
             <v-data-table-server v-model:items-per-page="itemsPerPage" :headers="headers" :items="serverItems" 
@@ -107,8 +114,8 @@ export default {
         </v-card-text>
     </v-card>
 
-    <v-dialog v-model="editor" width="100%">
-        <TaskEditor :task="task" @close="editorClose" @list-changed="tableKey++"></TaskEditor>
+    <v-dialog v-model="editor" width="50%">
+        <TaskEditor :task="task" :project="project" @close="editorClose" @list-changed="onListChanged"></TaskEditor>
     </v-dialog>
 </template>
 

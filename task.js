@@ -67,6 +67,7 @@ const task = module.exports = {
         let item = new task.model(req.body)
         let err = item.validateSync()
         if(err) {
+            console.log(err)
             res.status(400).json({ error: err.message })
             return
         }
@@ -92,7 +93,8 @@ const task = module.exports = {
     },
 
     delete: (req, res) => {
-        let _id = req.body._id
+        let _id = req.query._id
+        console.log(req.body)
         if(!_id) {
             res.status(400).json({ error: 'no _id!'})
             return
@@ -102,6 +104,7 @@ const task = module.exports = {
             res.json(row)
         })
         .catch((err) => {
+            console.log(err)
             res.status(400).json({ error: err.message })
         })
     }
