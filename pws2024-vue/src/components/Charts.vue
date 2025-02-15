@@ -1,5 +1,5 @@
 <script>
-import common from '@/mixins/common';
+import common from '../mixins/common';
 
 const projectEndpoint = "/api/project"
 
@@ -51,6 +51,7 @@ export default {
         .then(res => res.json().then(facet => {
             this.chartOptions.xAxis.data = facet.data.map(item => item.name)
             this.chartOptions.series[0].data = facet.data.map(item => item.contractor_ids.length || 0)
+            console.log(this.chartOptions)
         }))
     }
 }
@@ -61,7 +62,7 @@ export default {
         <h1>Charts</h1>
         <br>
         <div>
-            <v-chart :options="chartOptions" class="barChart"></v-chart>
+            <v-chart :option="chartOptions" class="barChart"></v-chart>
         </div>
     </div>
 </template>
