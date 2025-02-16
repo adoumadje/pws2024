@@ -6,6 +6,9 @@
 
 <script>
 import { GanttComponent, Filter, Toolbar } from '@syncfusion/ej2-vue-gantt';
+import { registerLicense } from '@syncfusion/ej2-base';
+
+registerLicense('Ngo9BigBOggjHTQxAR8/V1NMaF1cXmhLYVF1WmFZfVtgdV9DaVZQRGY/P1ZhSXxWdkdiX35ddX1URmVVVEM=');
 
 export default {
  name: "App",
