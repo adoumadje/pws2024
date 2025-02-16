@@ -1,60 +1,32 @@
-<template>
-    <div>
-       <ejs-gantt ref='gantt' id="GanttContainer" :dataSource="data" :taskFields = "taskFields" :height = "height" :columns="columns" :toolbar="toolbar" :allowFiltering= "true" :timelineSettings="timelineSettings" :splitterSettings= "splitterSettings" :labelSettings= "labelSettings" :projectStartDate="projectStartDate" :projectEndDate= "projectEndDate"></ejs-gantt>
-   </div>
-</template>
-
 <script>
 import { GanttComponent, Filter, Toolbar } from '@syncfusion/ej2-vue-gantt';
 import { registerLicense } from '@syncfusion/ej2-base';
 
 registerLicense('Ngo9BigBOggjHTQxAR8/V1NMaF1cXmhLYVF1WmFZfVtgdV9DaVZQRGY/P1ZhSXxWdkdiX35ddX1URmVVVEM=');
 
+const projectEndpoint = "/api/project"
+
 export default {
  name: "App",
  components: {
    'ejs-gantt' : GanttComponent
  },
- data: function() {
+
+ data() {
      return{
-           data: [
-           {
-               TaskID: 1,
-               TaskName: 'Project Initiation',
-               StartDate: new Date('04/02/2019'),
-               EndDate: new Date('04/21/2019'),
-               subtasks: [
-                   {  TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50 },
-                   { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50  },
-                   { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50 },
-               ]
-           },
-           {
-               TaskID: 5,
-               TaskName: 'Project Estimation',
-               StartDate: new Date('04/02/2019'),
-               EndDate: new Date('04/21/2019'),
-               subtasks: [
-                   { TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50 },
-                   { TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50 },
-                   { TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50 }
-               ]
-           },
-       ],
+           data: [],
            height: '450px',
            taskFields: {
-               id: 'TaskID',
-               name: 'TaskName',
-               startDate: 'StartDate',
-               endDate: 'EndDate',
-               duration: 'Duration',
+               id: '_id',
+               name: 'name',
+               startDate: 'startDate',
+               endDate: 'endDate',
                dependency: 'Predecessor',
-               child: 'subtasks',
+               child: 'tasks',
            },
            columns: [
                { field: 'TaskName', headerText: 'Task Name', width: '250' , clipMode: 'EllipsisWithTooltip' },
                { field: 'StartDate', headerText: 'Start Date' },
-               { field: 'Duration', headerText: 'Duration' },
                { field: 'EndDate', headerText: 'End Date' },
                { field: 'Predecessor', headerText: 'Predecessor' }
            ],
@@ -81,9 +53,24 @@ export default {
  },
  provide: {
      gantt: [ Filter, Toolbar ]
+ },
+
+ mounted() {
+    fetch(projectEndpoint + '?' + new URLSearchParams({ sort: 'name', order: 1 }).toString())
+    .then(res => res.json().then(facet => {
+        this.data = facet.data
+        console.log(this.data)
+    }))
  }
 };
 </script>
+
+
+<template>
+    <div>
+       <ejs-gantt ref='gantt' id="GanttContainer" :dataSource="data" :taskFields = "taskFields" :height = "height" :columns="columns" :toolbar="toolbar" :allowFiltering= "true" :timelineSettings="timelineSettings" :splitterSettings= "splitterSettings" :labelSettings= "labelSettings" :projectStartDate="projectStartDate" :projectEndDate= "projectEndDate"></ejs-gantt>
+   </div>
+</template>
 
 <style>
 @import url('https://cdn.syncfusion.com/ej2/material.css');

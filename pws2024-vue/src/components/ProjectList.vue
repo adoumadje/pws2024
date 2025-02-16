@@ -19,7 +19,7 @@ export default {
                 {title: 'Start Date', key: 'startDate', align: 'end'},
                 {title: 'End Date', key: 'endDate', align: 'end'},
                 {title: '#Contractors', key: 'contractor_ids', align: 'end'},
-                {title: '#Tasks', key: 'task_ids', align: 'end'}
+                {title: '#Tasks', key: 'tasks', align: 'end'}
             ],
             loading: false,
             search: '',
@@ -99,8 +99,8 @@ export default {
             <template #item.contractor_ids="{ item }">
                 {{ item.contractor_ids ? item.contractor_ids.length : 0 }}
             </template>
-            <template #item.task_ids="{ item }">
-                {{ item.task_ids ? item.task_ids.length : 0 }}
+            <template #item.tasks="{ item }">
+                {{ item.tasks ? item.tasks.length : 0 }}
             </template>
             <template #footer.prepend>
                 <v-text-field v-model="search" class="mr-5" variant="outlined" density="compact" 

@@ -35,8 +35,8 @@ const project = module.exports = {
         }
         const matching = [
             { $lookup: { from: 'tasks', localField: '_id', foreignField: 'project_id', as: 'tasks' } },
-            { $set: { task_ids: { $map: { input: '$tasks', as: 'item', in: '$$item._id' } } } },
-            { $unset: 'tasks' },
+            // { $set: { task_ids: { $map: { input: '$tasks', as: 'item', in: '$$item._id' } } } },
+            // { $unset: 'tasks' },
             {$match: {name: { $regex: req.query.search || '', $options: 'i' }}}
         ]
     
@@ -60,7 +60,7 @@ const project = module.exports = {
             facet.total = ( facet.total && facet.total[0] ? facet.total[0].count : 0) || 0
             facet.data = facet.data.map(item => {
                 const newItem = new project.model(item).toObject()
-                newItem.task_ids = item.task_ids
+                newItem.tasks = item.tasks
                 return newItem
             })
             res.json(facet)
