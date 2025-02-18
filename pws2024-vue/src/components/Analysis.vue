@@ -17,20 +17,18 @@ export default {
            data: [],
            height: '450px',
            taskFields: {
-               id: '_id',
-               name: 'name',
-               startDate: 'startDate',
-               endDate: 'endDate',
-               dependency: 'Predecessor',
-               child: 'tasks',
+            id: '_id',
+            name: 'name',
+            startDate: 'startDate',
+            endDate: 'endDate',
+            expandState: 'isExpanded',
+            child: 'tasks',
            },
            columns: [
-               { field: 'TaskName', headerText: 'Task Name', width: '250' , clipMode: 'EllipsisWithTooltip' },
-               { field: 'StartDate', headerText: 'Start Date' },
-               { field: 'EndDate', headerText: 'End Date' },
-               { field: 'Predecessor', headerText: 'Predecessor' }
+                { field: 'name', headerText: 'Name', width: '250' , clipMode: 'EllipsisWithTooltip' },
+               { field: 'startDate', headerText: 'Start Date' },
+               { field: 'endDate', headerText: 'End Date' },
            ],
-           toolbar: ['Search'],
            timelineSettings: {
                timelineUnitSize: 60,
                topTier: {
@@ -43,12 +41,12 @@ export default {
            },
            splitterSettings: {
                columnIndex: 3
-               },
+            },
            labelSettings: {
-               rightLabel: 'TaskName',
+               rightLabel: 'name',
            },
-           projectStartDate: new Date('04/01/2019 01:00:00 AM'),
-           projectEndDate: new Date('05/10/2019')  
+           projectStartDate: new Date(),
+           projectEndDate: new Date()  
      };
  },
  provide: {
@@ -59,6 +57,14 @@ export default {
     fetch(projectEndpoint + '?' + new URLSearchParams({ sort: 'name', order: 1 }).toString())
     .then(res => res.json().then(facet => {
         this.data = facet.data
+        for(let i = 0; i < this.data.length; i++){
+            this.data[i].startDate = new Date(this.data[i].startDate)
+            if(this.data[i].startDate < this.projectStartDate){
+                this.projectStartDate = this.data[i].startDate
+            }
+            this.data[i].endDate = new Date(this.data[i].endDate)
+            this.data[i].isExpanded = false
+        }
         console.log(this.data)
     }))
  }
@@ -67,11 +73,13 @@ export default {
 
 
 <template>
+    <h1>Analysis</h1>
+    <br>
     <div>
        <ejs-gantt ref='gantt' id="GanttContainer" :dataSource="data" :taskFields = "taskFields" :height = "height" :columns="columns" :toolbar="toolbar" :allowFiltering= "true" :timelineSettings="timelineSettings" :splitterSettings= "splitterSettings" :labelSettings= "labelSettings" :projectStartDate="projectStartDate" :projectEndDate= "projectEndDate"></ejs-gantt>
    </div>
 </template>
 
 <style>
-@import url('https://cdn.syncfusion.com/ej2/material.css');
+/*@import url('https://cdn.syncfusion.com/ej2/material.css');*/
 </style>
