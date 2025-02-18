@@ -12,7 +12,7 @@ export default {
                     return pattern.test(value) || 'It should start with a letter'
                 },
                 validDate: (value) => {
-                    const data = new Date(value)
+                    const date = new Date(value)
                     return date <= new Date() || 'It cannot be from the futur'
                 }
             }
